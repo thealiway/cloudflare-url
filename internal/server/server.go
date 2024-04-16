@@ -8,6 +8,10 @@ import (
 	"github.com/go-chi/chi"
 )
 
+type Serverer interface {
+	CreateShortenedURL(w http.ResponseWriter, r *http.Request)
+}
+
 type Server struct {
 	router        *chi.Mux
 	URLController *controllers.URLController
@@ -23,7 +27,10 @@ func NewServer() (*Server, error) {
 		return nil, err
 	}
 
-	u := controllers.NewURLController(URLStore)
+	u, err := controllers.NewURLController(URLStore)
+	if err != nil {
+		return nil, err
+	}
 	r := chi.NewRouter()
 
 	server := &Server{
@@ -37,7 +44,7 @@ func NewServer() (*Server, error) {
 
 	r.Get("/shortenedURLs", getURLs)
 
-	r.Post("/shortenedURL", server.createShortenedURL)
+	r.Post("/shortenedURL", server.CreateShortenedURL)
 
 	return server, nil
 }
