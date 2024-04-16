@@ -46,5 +46,11 @@ func NewServer() (*Server, error) {
 
 	r.Post("/shortenedURL", server.CreateShortenedURL)
 
+	r.Route("/s", func(r chi.Router) {
+		r.Route("/{shortenedURL}", func(r chi.Router){
+			r.Get("/", server.RedirectURL)
+		})
+	})
+
 	return server, nil
 }

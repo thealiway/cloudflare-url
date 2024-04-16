@@ -17,7 +17,6 @@ func ConnectWithConnector(dbName string) (*sql.DB, error) {
 		dbUser                 = os.Getenv("DB_USER")
 		dbPwd                  = os.Getenv("DB_PASS")
 		instanceConnectionName = os.Getenv("INSTANCE_CONNECTION_NAME")
-		usePrivate             = os.Getenv("PRIVATE_IP")
 	)
 
 	dsn := fmt.Sprintf("user=%s password=%s database=%s", dbUser, dbPwd, dbName)
@@ -25,12 +24,8 @@ func ConnectWithConnector(dbName string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	var opts []cloudsqlconn.Option
-	if usePrivate != "" {
-		opts = append(opts, cloudsqlconn.WithDefaultDialOptions(cloudsqlconn.WithPrivateIP()))
-	}
 
-	d, err := cloudsqlconn.NewDialer(context.Background(), opts...)
+	d, err := cloudsqlconn.NewDialer(context.Background())
 	if err != nil {
 		return nil, err
 	}
