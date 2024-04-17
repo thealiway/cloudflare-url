@@ -40,6 +40,15 @@ func (s *Server) RedirectURL(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	fmt.Println("originalURL:", originalURL)
 	http.Redirect(w, r, originalURL, http.StatusMovedPermanently)
+}
+
+func (s *Server) GetUsage(w http.ResponseWriter, r *http.Request) {
+	param := chi.URLParam(r, "shortenedURL")
+	usage, err := s.URLController.GetUsage(param)
+	if err != nil {
+		fmt.Printf("error getting usage: %+v \n", err)
+	}
+
+	json.NewEncoder(w).Encode(usage)
 }
