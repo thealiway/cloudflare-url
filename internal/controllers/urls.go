@@ -61,7 +61,7 @@ func (u *URLController) CreateShortenedURL(input *apimodels.Input) (*URL, error)
 		return nil, err
 	}
 
-	s := fmt.Sprintf("ttps://cloudflare-url-ownx73g3lq-uw.a.run.app/s/%s", string(shortened))
+	s := fmt.Sprintf("https://cloudflare-url-ownx73g3lq-uw.a.run.app/s/%s", string(shortened))
 
 	return &URL{
 		LongURL:        input.URL,
