@@ -9,10 +9,6 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func getURLs(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("going to get all shortened urls"))
-}
-
 func (s *Server) CreateShortenedURL(w http.ResponseWriter, r *http.Request) {
 	newInput := &apimodels.Input{}
 	decoder := json.NewDecoder(r.Body)
@@ -37,12 +33,18 @@ func (s *Server) RedirectURL(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
+	err = s.UsageController.LogUsage(param)
+	if err != nil {
+		fmt.Printf("error logging usage: %+v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 	http.Redirect(w, r, originalURL, http.StatusMovedPermanently)
 }
 
 func (s *Server) GetUsage(w http.ResponseWriter, r *http.Request) {
 	param := chi.URLParam(r, "shortenedURL")
-	usage, err := s.URLController.GetUsage(param)
+	usage, err := s.UsageController.GetUsage(param)
 	if err != nil {
 		fmt.Printf("error getting usage: %+v \n", err)
 		w.WriteHeader(http.StatusInternalServerError)

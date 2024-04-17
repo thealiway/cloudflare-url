@@ -5,7 +5,7 @@ import (
 	"database/sql"
 )
 
-func NewURLStore() (*sql.DB, error) {
+func NewStore() (*sql.DB, error) {
 	db, err := cloudsql.ConnectWithConnector("urls")
 	if err != nil {
 		return nil, err

@@ -80,11 +80,12 @@ Here is a non-exhaustive list of next steps I would take for this project.
 1. Make customer facing response and documentation with the shortenedURL less ambiguous (see above).
 2. Create the database in terraform to avoid accidental changes.
 3. Add testing. All of the methods in the controllers need unit tests, especially around checking expiration dates and calculating the usage stats. There are probably some bugs in there. There should be integration tests around the database methods. I would also add happy path post deployment smoke tests to make sure nothing major broke after a deployment (like breaking the database connection). And testing should run in a pipeline before deployment.
-4. Fix error handling. The API currently returns errors that aren't helpful in indicating the problem. 
+4. Fix error handling. The API currently returns errors that aren't helpful in indicating the problem or if it expected.
 5. Add alerts and anomoly detection around increased error messages or decreased success rates. It also needs alerts around the database connections, throughput, and latency, at least.
 6. Abstract out the database methods. Right now they are pretty brittle and don't allow for easily adding or modifying queries.
 7. Create a pipeline to easily test and deploy code.
 8. Rate limiting to prevent customers from destabalizing the application.
+9. Determine with product or UX if expired shortened urls should still have usage statistics. If not, add logic to have that route return an appropriate response.
 
 And I have many more ideas. I'm excited to talk to you about this. I really enjoyed working on it and flexing my problem solving muscle. I used this opportunity to learn more about GCP and relearned a lot about postgresql.
 Thank you for your time.
