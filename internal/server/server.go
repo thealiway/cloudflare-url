@@ -50,6 +50,7 @@ func NewServer() (*Server, error) {
 		r.Route("/{shortenedURL}", func(r chi.Router) {
 			r.Get("/", server.RedirectURL)
 			r.Get("/usage", server.GetUsage)
+			r.Delete("/", server.DeleteURL)
 		})
 	})
 

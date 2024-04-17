@@ -48,7 +48,19 @@ func (s *Server) GetUsage(w http.ResponseWriter, r *http.Request) {
 	usage, err := s.URLController.GetUsage(param)
 	if err != nil {
 		fmt.Printf("error getting usage: %+v \n", err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	json.NewEncoder(w).Encode(usage)
+}
+
+func (s *Server) DeleteURL(w http.ResponseWriter, r *http.Request) {
+	param := chi.URLParam(r, "shortenedURL")
+	err := s.URLController.DeleteURL(param)
+	if err != nil {
+		fmt.Printf("error deleting shortened url: %+v \n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

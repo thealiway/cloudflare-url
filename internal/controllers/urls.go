@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -14,8 +15,9 @@ type URLController struct {
 }
 
 type URL struct {
-	LongURL      string `json:"longURL"`
-	ShortenedURL string `json:"shortenedURL"`
+	LongURL        string `json:"longURL"`
+	ShortenedURL   string `json:"shortenedURL"`
+	ExpirationDate int64  `json:"expirationDate"`
 }
 
 type Usage struct {
@@ -82,7 +84,6 @@ func (u *URLController) GetOriginalURL(shortenedURL string) (string, error) {
 }
 
 func (u *URLController) LogUsage(shortenedURL string) error {
-	fmt.Println("logging usage")
 	stmt, err := u.URLStore.Prepare("INSERT INTO usage (id, shortened_url, usage_time) VALUES ($1, $2, $3)")
 	if err != nil {
 		fmt.Println("Unable to prepare usage")
@@ -118,6 +119,11 @@ func (u *URLController) GetUsage(shortenedURL string) (*Stats, error) {
 		usages = append(usages, usage)
 	}
 
+	if len(usages) == 0 {
+		emptyErr := errors.New("URL does not exist")
+		return nil, emptyErr
+	}
+
 	usageStats := &Stats{
 		Day:     0,
 		Week:    0,
@@ -139,7 +145,15 @@ func (u *URLController) GetUsage(shortenedURL string) (*Stats, error) {
 		}
 	}
 
-	fmt.Printf("usages: %+v", usages)
-
 	return usageStats, nil
+}
+
+func (u *URLController) DeleteURL(shortenedURL string) error {
+	_, err := u.URLStore.Exec("DELETE FROM urls WHERE shortened_url = $1", shortenedURL)
+	if err != nil {
+		fmt.Printf("Unable to delete: %+v \n", err)
+		return err
+	}
+
+	return nil
 }
