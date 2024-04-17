@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	apimodels "cloudflareurl/internal/models"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -38,7 +39,7 @@ func NewURLController(uStore *sql.DB) (*URLController, error) {
 	}, nil
 }
 
-func (u *URLController) CreateShortenedURL(url string) (*URL, error) {
+func (u *URLController) CreateShortenedURL(input *apimodels.Input) (*URL, error) {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const keyLength = 6
 
@@ -48,31 +49,39 @@ func (u *URLController) CreateShortenedURL(url string) (*URL, error) {
 		shortened[i] = charset[rand.Intn(len(charset))]
 	}
 
-	stmt, err := u.URLStore.Prepare("INSERT INTO urls (long_url, shortened_url) VALUES ($1, $2)")
+	stmt, err := u.URLStore.Prepare("INSERT INTO urls (long_url, shortened_url, expiration_date) VALUES ($1, $2, $3)")
 	if err != nil {
 		fmt.Println("Unable to prepare")
 		return nil, err
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(url, shortened); err != nil {
+	if _, err := stmt.Exec(input.URL, shortened, input.ExpirationDate); err != nil {
 		fmt.Println("Unable to insert into DB")
 		return nil, err
 	}
 
 	return &URL{
-		LongURL:      url,
-		ShortenedURL: string(shortened),
+		LongURL:        input.URL,
+		ShortenedURL:   string(shortened),
+		ExpirationDate: input.ExpirationDate,
 	}, nil
 }
 
 func (u *URLController) GetOriginalURL(shortenedURL string) (string, error) {
-	row := u.URLStore.QueryRow("SELECT long_url FROM urls WHERE shortened_url = $1", shortenedURL)
+	row := u.URLStore.QueryRow("SELECT * FROM urls WHERE shortened_url = $1", shortenedURL)
 
-	var longURL string
-	err := row.Scan(&longURL)
+	var url URL
+	err := row.Scan(&url.LongURL, &url.ShortenedURL, &url.ExpirationDate)
 	if err != nil {
 		return "", err
+	}
+
+	uTime := time.Unix(url.ExpirationDate, 0)
+	if time.Now().After(uTime) {
+		fmt.Println("link is expired")
+		expiredErr := errors.New("link is expired")
+		return "", expiredErr
 	}
 
 	err = u.LogUsage(shortenedURL)
@@ -80,7 +89,7 @@ func (u *URLController) GetOriginalURL(shortenedURL string) (string, error) {
 		return "", nil
 	}
 
-	return longURL, nil
+	return url.LongURL, nil
 }
 
 func (u *URLController) LogUsage(shortenedURL string) error {

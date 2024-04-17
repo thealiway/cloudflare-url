@@ -1,6 +1,7 @@
 package server
 
 import (
+	apimodels "cloudflareurl/internal/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,23 +9,19 @@ import (
 	"github.com/go-chi/chi"
 )
 
-type input struct {
-	URL string `json:"url"`
-}
-
 func getURLs(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("going to get all shortened urls"))
 }
 
 func (s *Server) CreateShortenedURL(w http.ResponseWriter, r *http.Request) {
-	newInput := &input{}
+	newInput := &apimodels.Input{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(newInput)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	newURL, err := s.URLController.CreateShortenedURL(newInput.URL)
+	newURL, err := s.URLController.CreateShortenedURL(newInput)
 	if err != nil {
 		fmt.Printf("error creating shortened URL: %+v \n", err)
 		w.WriteHeader(http.StatusInternalServerError)
