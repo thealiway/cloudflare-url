@@ -61,9 +61,11 @@ func (u *URLController) CreateShortenedURL(input *apimodels.Input) (*URL, error)
 		return nil, err
 	}
 
+	s := fmt.Sprintf("ttps://cloudflare-url-ownx73g3lq-uw.a.run.app/s/%s", string(shortened))
+
 	return &URL{
 		LongURL:        input.URL,
-		ShortenedURL:   string(shortened),
+		ShortenedURL:   s,
 		ExpirationDate: input.ExpirationDate,
 	}, nil
 }
@@ -78,7 +80,7 @@ func (u *URLController) GetOriginalURL(shortenedURL string) (string, error) {
 	}
 
 	uTime := time.Unix(url.ExpirationDate, 0)
-	if time.Now().After(uTime) {
+	if url.ExpirationDate != 0 && time.Now().After(uTime) {
 		fmt.Println("link is expired")
 		expiredErr := errors.New("link is expired")
 		return "", expiredErr
