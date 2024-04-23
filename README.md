@@ -1,4 +1,4 @@
-# cloudflare-url
+# url-shortener
 
 ## The API
 #### POST /shortenedURL
